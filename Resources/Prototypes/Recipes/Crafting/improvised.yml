@@ -201,3 +201,29 @@
     sprite: Clothing/Head/Hats/straw_hat.rsi
     state: icon
   objectType: Item
+
+- type: construction
+  name: Canvas
+  id: Canvas
+  graph: Canvas
+  startNode: start
+  targetNode: canvas
+  category: construction-category-tools
+  objectType: Item
+  description: Um quadro para pintar.
+  icon:
+    sprite: Objects/Misc/artstuff.rsi
+    state: icon
+
+- type: construction
+  name: Big Canvas
+  id: CanvasBig
+  graph: CanvasBig
+  startNode: start
+  targetNode: canvas
+  category: construction-category-tools
+  objectType: Item
+  description: Um quadro grande para pintar.
+  icon:
+    sprite: Objects/Misc/artstuff.rsi
+    state: icon
