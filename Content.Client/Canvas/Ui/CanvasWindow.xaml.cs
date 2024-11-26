@@ -41,6 +41,7 @@ namespace Content.Client.Canvas.Ui
         private string _paintingCode = string.Empty;
 
         private string _artist = string.Empty;
+        private string _signature = string.Empty;
 
         private string? _autoSelected;
         private string? _selected;
@@ -51,6 +52,10 @@ namespace Content.Client.Canvas.Ui
         public event Action<Color>? OnColorSelected;
         public event Action<string>? OnSelected;
         public event Action<string>? OnFinalize;
+        public event Action<string>? OnSignature;
+        public event Action<int>? OnResizeHeight;
+        public event Action<int>? OnResizeWidth;
+
 
 
         public CanvasWindow()
@@ -95,14 +100,47 @@ namespace Content.Client.Canvas.Ui
                 PopulatePaintingGrid();
             };
 
+            HeightSize.OnReleased += _ =>
+            {
+                SetHeight((int) HeightSize.Value);
+                HeightSizeLabel.Text = _height.ToString();
+                OnResizeHeight?.Invoke(_height);
+                PopulatePaintingGrid();
+            };
+
+            HeightSize.OnValueChanged += _ =>
+            {
+                HeightSizeLabel.Text = HeightSize.Value.ToString();
+            };
+
+            WidthSize.OnReleased += _ =>
+            {
+                SetWidth((int) WidthSize.Value);
+                WidthSizeLabel.Text = _width.ToString();
+                OnResizeWidth?.Invoke(_width);
+                PopulatePaintingGrid();
+            };
+            WidthSize.OnValueChanged += _ =>
+            {
+                WidthSizeLabel.Text = WidthSize.Value.ToString();
+            };
+
             FinalizeButton.OnPressed += _ =>
             {
-                _artist = "Nome do artista";
+                _artist = "Anonymous";
+                if (!string.IsNullOrEmpty(_signature))
+                    _artist = _signature;
                 if (_entManager.TryGetComponent(_owner, out MetaDataComponent? metaData))
                 {
                     _artist = metaData.EntityName;
                 }
                 OnFinalize?.Invoke(_artist);
+            };
+
+            ArtistSignature.OnTextEntered += _ =>
+            {
+                _signature = ArtistSignature.Text;
+                OnSignature?.Invoke(_signature);
             };
             //FixPaintingCode();
             //PopulatePaintingGrid();
@@ -132,7 +170,7 @@ namespace Content.Client.Canvas.Ui
             _height = castState.Height;
             _width = castState.Width;
             _artist = castState.Artist;
-            Logger.ErrorS("canvas", $"received update {_paintingCode}.");
+            //Logger.ErrorS("canvas", $"received update {_paintingCode}.");
 
             PopulatePaintingGrid();
         }
@@ -215,13 +253,15 @@ namespace Content.Client.Canvas.Ui
             var transparencyButton = new Button
             {
                 Text = "Eraser",
+                MinHeight = 30,
+                VerticalAlignment = Control.VAlignment.Top
             };
 
             // Attach an event to handle transparency selection
             transparencyButton.OnPressed += _ => HandleColorSelected(Color.Transparent);
 
             // Add the transparency button to the ColorSelector
-            ColorSelector.AddChild(transparencyButton);
+            ResolutionContainer.AddChild(transparencyButton);
         }
 
 
@@ -233,18 +273,32 @@ namespace Content.Client.Canvas.Ui
         {
             _artist = artist;
         }
+        public void SetSignature(string signature)
+        {
+            _signature = signature;
+            ArtistSignature.Text = _signature;
+        }
         public void SetHeight(int height)
         {
             _height = height;
+            HeightSize.Value = height;
         }
         public void SetWidth(int width)
         {
             _width = width;
+            WidthSize.Value = width;
         }
         public void PopulatePaintingGrid()
         {
             // Clear any existing children in the Grids container
             Grids.RemoveAllChildren();
+
+            if (!string.IsNullOrEmpty(_artist))
+            {
+                ResolutionContainer.Visible = false;
+                HeaderColorPreview.Visible = false;
+                HeaderTools.Visible = false;
+            }
 
             int index = 0; // Index to track the position in the painting code
             bool isDrawing = false; // Tracks if the mouse button is held down for drawing

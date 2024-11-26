@@ -39,16 +39,18 @@ namespace Content.Client.Canvas
             component.Height = state.Height;
             component.Width = state.Width;
             component.Artist = state.Artist;
+            component.SizeMultiplier = state.SizeMultiplier;
+            component.Signature = state.Signature;
 
             component.UIUpdateNeeded = true;
 
             if (!string.IsNullOrEmpty(component.Artist))
             {
-                UpdateSprite(uid, component.PaintingCode, component.Height, component.Width);
+                UpdateSprite(uid, component.PaintingCode, component.Height, component.Width, component.SizeMultiplier);
             }
         }
 
-        public void UpdateSprite(EntityUid uid, string code, int height = 16, int width = 16)
+        public void UpdateSprite(EntityUid uid, string code, int height = 16, int width = 16, int sizeMultiplier = 2)
         {
             Logger.Info($"gerando arte system.");
             if (string.IsNullOrEmpty(code))
@@ -57,14 +59,15 @@ namespace Content.Client.Canvas
             if (EntityManager.TryGetComponent<SpriteComponent>(uid, out var sprite))
             {
                 // Change sprite texture based on artist name
-                var texture = GenerateArtistTexture(code, height, width); // Implement this method
+                var texture = GenerateArtistTexture(code, height, width, sizeMultiplier); // Implement this method
                 sprite.LayerSetTexture(0, texture); // Assuming layer 0; adjust as needed
             }
         }
 
-        private Texture GenerateArtistTexture(string code, int height = 16, int width = 16)
+        private Texture GenerateArtistTexture(string code, int height = 16, int width = 16, int sizeMultiplier = 2)
         {
-            const int sizeMultiplier = 2; // Size in pixels for each grid cell
+            if (height > 32 || width > 32)
+                sizeMultiplier = 1;
             var image = new Image<Rgba32>(width * sizeMultiplier, height * sizeMultiplier);
 
             // Parse the code string into color segments
@@ -184,22 +187,6 @@ namespace Content.Client.Canvas
             // Clamp the value to ensure it is within the range [0.0, 1.0]
             result = MathF.Max(0.0f, MathF.Min(1.0f, result));
             return true;
-        }
-
-        private Color GetColorFromCode(string colorCode)
-        {
-            Logger.InfoS("canvas", $"GetColorFromCode Color: {colorCode}");
-            string[] components = colorCode.Split('|');
-            if (components.Length == 4 &&
-                float.TryParse(components[0], out float r) &&
-                float.TryParse(components[1], out float g) &&
-                float.TryParse(components[2], out float b) &&
-                float.TryParse(components[3], out float a))
-            {
-                return new Color(r, g, b, a);
-            }
-
-            return Color.White; // Default to white if parsing fails
         }
 
         private sealed class StatusControl : Control

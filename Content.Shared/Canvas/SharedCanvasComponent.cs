@@ -66,6 +66,22 @@ public abstract partial class SharedCanvasComponent : Component
             Dirty();
         }
     }
+
+    [DataField("signature")]
+    private string _signature = string.Empty;
+    public string Signature
+    {
+        get => _signature;
+        set
+        {
+            if (_signature == value)
+                return;
+
+            _signature = value;
+            Dirty();
+        }
+    }
+
     [DataField("height")]
     private int _height = 16;
     public int Height
@@ -93,6 +109,21 @@ public abstract partial class SharedCanvasComponent : Component
 
             _width = value;
             //Nwidth = value;
+            Dirty();
+        }
+    }
+
+    [DataField("size")]
+    private int _sizeMultiplier = 2;
+    public int SizeMultiplier
+    {
+        get => _sizeMultiplier;
+        set
+        {
+            if (_sizeMultiplier == value)
+                return;
+
+            _sizeMultiplier = value;
             Dirty();
         }
     }
@@ -132,6 +163,36 @@ public abstract partial class SharedCanvasComponent : Component
         public CanvasFinalizeMessage(string selected)
         {
             State = selected;
+        }
+    }
+
+    [Serializable, NetSerializable]
+    public sealed class CanvasSignatureMessage : BoundUserInterfaceMessage
+    {
+        public readonly string Signature;
+        public CanvasSignatureMessage(string signature)
+        {
+            Signature = signature;
+        }
+    }
+
+    [Serializable, NetSerializable]
+    public sealed class CanvasHeightMessage : BoundUserInterfaceMessage
+    {
+        public readonly int Height;
+        public CanvasHeightMessage(int height)
+        {
+            Height = height;
+        }
+    }
+
+    [Serializable, NetSerializable]
+    public sealed class CanvasWidthMessage : BoundUserInterfaceMessage
+    {
+        public readonly int Width;
+        public CanvasWidthMessage(int width)
+        {
+            Width = width;
         }
     }
 
@@ -176,8 +237,10 @@ public abstract partial class SharedCanvasComponent : Component
         public readonly int Height;
         public readonly int Width;
         public readonly string Artist;
+        public readonly string Signature;
+        public readonly int SizeMultiplier;
 
-        public CanvasComponentState(Color color, string state, string paintingCode, int height, int width, string artist)
+        public CanvasComponentState(Color color, string state, string paintingCode, int height, int width, string artist, int sizeMultiplier, string signature)
         {
             Color = color;
             State = state;
@@ -185,6 +248,8 @@ public abstract partial class SharedCanvasComponent : Component
             Height = height;
             Width = width;
             Artist = artist;
+            SizeMultiplier = sizeMultiplier;
+            Signature = signature;
         }
     }
 
@@ -204,8 +269,9 @@ public abstract partial class SharedCanvasComponent : Component
         public int Height;
         public int Width;
         public string Artist;
+        public string Signature;
 
-        public CanvasBoundUserInterfaceState(string selected, string paintingCode, Color color, int height, int width, string artist)
+        public CanvasBoundUserInterfaceState(string selected, string paintingCode, Color color, int height, int width, string artist, string signature)
         {
             PaintingCode = paintingCode;
             Selected = selected;
@@ -213,6 +279,7 @@ public abstract partial class SharedCanvasComponent : Component
             Height = height;
             Width = width;
             Artist = artist;
+            Signature = signature;
         }
     }
 }

@@ -31,6 +31,9 @@ namespace Content.Client.Canvas.Ui
             _window.OnColorSelected += SelectColor;
             _window.OnSelected += Select;
             _window.OnFinalize += Finalize;
+            _window.OnSignature += Signature;
+            _window.OnResizeHeight += ResizeHeight;
+            _window.OnResizeWidth += ResizeWidth;
             _window.OnClose += Close;
             PopulateCanvas(Owner);
             _window.OpenCentered();
@@ -110,6 +113,8 @@ namespace Content.Client.Canvas.Ui
             _window.SetPaintingCode(canvasComponent?.PaintingCode ?? string.Empty);
             _window.SetHeight(canvasComponent?.Height ?? 16);
             _window.SetWidth(canvasComponent?.Width ?? 16);
+            _window.SetSignature(canvasComponent?.Signature ?? string.Empty);
+
 
             if (!string.IsNullOrEmpty(canvasComponent?.Artist))
             {
@@ -153,6 +158,18 @@ namespace Content.Client.Canvas.Ui
         public void Finalize(string state)
         {
             SendMessage(new CanvasFinalizeMessage(state));
+        }
+        public void Signature(string state)
+        {
+            SendMessage(new CanvasSignatureMessage(state));
+        }
+        public void ResizeHeight(int height)
+        {
+            SendMessage(new CanvasHeightMessage(height));
+        }
+        public void ResizeWidth(int width)
+        {
+            SendMessage(new CanvasWidthMessage(width));
         }
 
         public void SelectColor(Color color)

@@ -30,7 +30,10 @@ namespace Content.Server.Canvas
             SubscribeLocalEvent<CanvasComponent, ComponentInit>(OnCanvasInit);
             SubscribeLocalEvent<CanvasComponent, CanvasSelectMessage>(OnCanvasBoundUI);
             SubscribeLocalEvent<CanvasComponent, CanvasFinalizeMessage>(OnCanvasBoundFinalize);
+            SubscribeLocalEvent<CanvasComponent, CanvasSignatureMessage>(OnCanvasBoundSignature);
             SubscribeLocalEvent<CanvasComponent, CanvasColorMessage>(OnCanvasBoundUIColor);
+            SubscribeLocalEvent<CanvasComponent, CanvasHeightMessage>(OnCanvasBoundHeight);
+            SubscribeLocalEvent<CanvasComponent, CanvasWidthMessage>(OnCanvasBoundWidth);
             SubscribeLocalEvent<CanvasComponent, UseInHandEvent>(OnCanvasUse, before: new[] { typeof(FoodSystem) });
             SubscribeLocalEvent<CanvasComponent, AfterInteractEvent>(OnCanvasAfterInteract, after: new[] { typeof(FoodSystem) });
             SubscribeLocalEvent<CanvasComponent, DroppedEvent>(OnCanvasDropped);
@@ -39,7 +42,7 @@ namespace Content.Server.Canvas
 
         private static void OnCanvasGetState(EntityUid uid, CanvasComponent component, ref ComponentGetState args)
         {
-            args.State = new CanvasComponentState(component.Color, component.SelectedState, component.PaintingCode, component.Height, component.Width, component.Artist);
+            args.State = new CanvasComponentState(component.Color, component.SelectedState, component.PaintingCode, component.Height, component.Width, component.Artist, component.SizeMultiplier, component.Signature);
         }
 
         private void OnCanvasAfterInteract(EntityUid uid, CanvasComponent component, AfterInteractEvent args)
@@ -64,7 +67,7 @@ namespace Content.Server.Canvas
 
             _uiSystem.TryToggleUi(uid, SharedCanvasComponent.CanvasUiKey.Key, args.User);
 
-            _uiSystem.SetUiState(uid, SharedCanvasComponent.CanvasUiKey.Key, new CanvasBoundUserInterfaceState(component.SelectedState, component.PaintingCode, component.Color, component.Height, component.Width, component.Artist));
+            _uiSystem.SetUiState(uid, SharedCanvasComponent.CanvasUiKey.Key, new CanvasBoundUserInterfaceState(component.SelectedState, component.PaintingCode, component.Color, component.Height, component.Width, component.Artist, component.Signature));
             args.Handled = true;
         }
 
@@ -82,7 +85,11 @@ namespace Content.Server.Canvas
             component.Artist = args.State;
             Dirty(uid, component);
         }
-
+        private void OnCanvasBoundSignature(EntityUid uid, CanvasComponent component, CanvasSignatureMessage args)
+        {
+            component.Signature = args.Signature;
+            Dirty(uid, component);
+        }
         private void OnCanvasBoundUIColor(EntityUid uid, CanvasComponent component, CanvasColorMessage args)
         {
             // you still need to ensure that the given color is a valid color
@@ -92,6 +99,16 @@ namespace Content.Server.Canvas
             component.Color = args.Color;
             Dirty(uid, component);
 
+        }
+        private void OnCanvasBoundHeight(EntityUid uid, CanvasComponent component, CanvasHeightMessage args)
+        {
+            component.Height = args.Height;
+            Dirty(uid, component);
+        }
+        private void OnCanvasBoundWidth(EntityUid uid, CanvasComponent component, CanvasWidthMessage args)
+        {
+            component.Width = args.Width;
+            Dirty(uid, component);
         }
 
         private void OnCanvasInit(EntityUid uid, CanvasComponent component, ComponentInit args)
